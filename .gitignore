@@ -358,3 +358,4 @@ Temporary Items\
 .history\
 \
 # End of https://www.gitignore.io/api/node,reactnative,visualstudiocode}
+.env
