@@ -5,17 +5,18 @@ import { StyleSheet,
 			ImageBackground, 
 			FlatList, 
 			TouchableOpacity, 
-			Platform,
-			AsyncStorage
+			Platform
 		} from 'react-native'
+import axios from 'axios'
 import moment from 'moment'
 import 'moment/locale/pt-br'
-import todayImage from '../../assets/imgs/today.jpg'
 import commonStyles from '../commonStyles'
 import Task from '../components/Task'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import ActionButton from 'react-native-action-button'
 import AddTask from './AddTask'
+import { server, showError } from '../common'
+import todayImage from '../../assets/imgs/today.jpg'
 
 export default class Agenda extends Component {
 	state = {
@@ -25,21 +26,37 @@ export default class Agenda extends Component {
 		showAddTask: false
 	}
 
-	AddTask = task => {
-		const tasks = [...this.state.tasks]
-		tasks.push({
-			id: Math.random(),
-			desc: task.desc,
-			estimateAt: task.date,
-			doneAt: null
-		})
+	AddTask = async task => {
+		// const tasks = [...this.state.tasks]
+		// tasks.push({
+		// 	id: Math.random(),
+		// 	desc: task.desc,
+		// 	estimateAt: task.date,
+		// 	doneAt: null
+		// })
 
-		this.setState({ tasks, showAddTask: false}, this.filterTasks)
+		// this.setState({ tasks, showAddTask: false}, this.filterTasks)
+		try {
+			await axios.post(`${server}/tasks`, {
+				desc: task.desc,
+				estimateAt: moment(task.date).format('YYYY-MM-DD HH:mm:ss')
+			})
+
+			this.setState({ showAddTask: false }, this.loadTasks)
+		} catch (err) {
+			showError(err)
+		}
 	}
 
-	deleteTask = id => {
-		const tasks = this.state.tasks.filter(task => task.id !== id)
-		this.setState({ tasks }, this.filterTasks)
+	deleteTask = async id => {
+		// const tasks = this.state.tasks.filter(task => task.id !== id)		
+		// this.setState({ tasks }, this.filterTasks)
+		try {
+			await axios.delete(`${server}/tasks/${id}`)
+			await this.loadTasks()
+		} catch (err) {
+			showError(err)
+		}
 	}
 
 	filterTasks = () => {
@@ -51,7 +68,7 @@ export default class Agenda extends Component {
 			visibleTasks = this.state.tasks.filter(pending)
 		}
 		this.setState({ visibleTasks })
-		AsyncStorage.setItem('tasks', JSON.stringify(this.state.tasks))
+		// AsyncStorage.setItem('tasks', JSON.stringify(this.state.tasks))
 	}
 
 	toogleFilter = () => {
@@ -59,26 +76,27 @@ export default class Agenda extends Component {
 		this.setState({ showDoneTasks: !this.state.showDoneTasks }, this.filterTasks)
 	}
 
-	componentDidMount() {
-		this.getTasks()
+	componentDidMount = async () => {
+		// this.getTasks()
+		this.loadTasks()
 	}
 
 	getTasks = async () => {
-		const data = await AsyncStorage.getItem('tasks')
-		const tasks = JSON.parse(data) || []
-		this.setState({ tasks }, this.filterTasks())		
+		// const data = await AsyncStorage.getItem('tasks')
+		// const tasks = JSON.parse(data) || []
+		// this.setState({ tasks }, this.filterTasks())		
 	}
 
-	toogleTask = id => {
+	toogleTask = async id => {
 		// implementação com Map
-		const tasks = this.state.tasks.map(task => {
-			if (task.id === id) {
-				task = {...task}
-				task.doneAt = task.doneAt ? null : new Date()
-			}
+		// const tasks = this.state.tasks.map(task => {
+		// 	if (task.id === id) {
+		// 		task = {...task}
+		// 		task.doneAt = task.doneAt ? null : new Date()
+		// 	}
 
-			return task
-		})
+		// 	return task
+		// })
 		// implementação com clone e forEach
 		// const tasks = [...this.state.tasks]
 		// tasks.forEach(task => {
@@ -86,7 +104,23 @@ export default class Agenda extends Component {
 		// 		task.doneAt = task.doneAt ? null : new Date()
 		// 	}
 		// })
-		this.setState({ tasks }, this.filterTasks)
+		// this.setState({ tasks }, this.filterTasks)
+		try {
+			await axios.put(`${server}/tasks/${id}/toggle`)
+			await this.loadTasks()
+		} catch (err) {
+			showError(err)
+		}
+	}
+
+	loadTasks = async () => {
+		try {
+			const maxDate = moment().format('YYY-MM-DD 23:59')
+			const res = await axios.get(`${server}/tasks?date=${maxDate}`)
+			this.setState({ tasks: res.data }, this.filterTasks)
+		} catch (err) {
+			showError(err)
+		}
 	}
 
 	render() {

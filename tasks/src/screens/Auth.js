@@ -30,7 +30,7 @@ export default class Auth extends Component {
 			})
 
 			// Incluirá o token no cabeçalhos das próximas requisições
-			axios.defaults.headers.common['Athorization'] = `bearer ${res.data.token}`
+			axios.defaults.headers.common['Authorization'] = `bearer ${res.data.token}`
 			this.props.navigation.navigate('Home')
 		} catch (err) {
 			Alert.alert('Erro', 'Falha no Login!')
