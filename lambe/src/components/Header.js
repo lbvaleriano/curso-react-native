@@ -13,7 +13,7 @@ class Header extends Component {
 			<View style={styles.container}>
 				<View style={styles.rowContainer}>
 					<Image source={icon} style={styles.image} />
-					<Text style={styles.title}> Lambe Lambe</Text>
+					<Text style={styles.title}>Lambe Lambe</Text>
 				</View>
 			</View>
 		)
