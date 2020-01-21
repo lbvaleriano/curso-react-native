@@ -2,6 +2,12 @@
 // react-native run-android
 // react-native run-ios --simulator "iPhone 8"
 
+// 1) instalar o firebase: sudo npm install -g firebase-tools
+// 2) logar no Firebase: sudo firebase login
+// 3) criar projeto: sudo firebase init
+// 4) instalar bibliiotecas necessárias: npm i -s @google-cloud/storage cors uuid
+// 5) fazer deploy da function: sudo firebase deploy
+
 import React from 'react'
 import { Provider } from 'react-redux'
 import { AppRegistry } from 'react-native'
